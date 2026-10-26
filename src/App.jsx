@@ -43,7 +43,14 @@ export default function App() {
   return (
     <div className="chart-container">
       <h1 className="chart-title">
-        Where do D3 loves React students come from?
+        Where do{" "}
+        {/* The course logo: text + the course's heart image (saved in public/) */}
+        <span className="course-logo">
+          D3
+          <img src="/heart-x.svg" alt="loves" className="course-logo-heart" />
+          React
+        </span>{" "}
+        students come from?
       </h1>
       <p className="chart-subtitle">
         A snapshot of students from all over the world.

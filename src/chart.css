@@ -27,6 +27,27 @@
   color: #ffffff;
 }
 
+/* ---- Course logo inside the title: "D3 ♥ React" ---- */
+
+.course-logo {
+  display: inline-flex; /* keeps the 3 pieces together on one line */
+  align-items: center;
+  gap: 0.25em;
+  font-family: ui-monospace, "Cascadia Code", "Fira Code", Consolas, monospace;
+  font-weight: 500;
+  letter-spacing: 0;
+  white-space: nowrap;
+  padding-bottom: 0.18em;
+  /* Wavy red underline: a tiny wave drawn in SVG, repeated along the bottom */
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8' viewBox='0 0 20 8'%3E%3Cpath d='M0 4 Q5 0 10 4 T20 4' fill='none' stroke='%23e8325a' stroke-width='2.5'/%3E%3C/svg%3E")
+    repeat-x left bottom / 0.4em 0.16em;
+}
+
+.course-logo-heart {
+  height: 0.8em; /* scales with the title size */
+  width: auto;
+}
+
 .chart-subtitle {
   font-size: clamp(17px, 1.8vw, 22px);
   color: #8a8f99;
