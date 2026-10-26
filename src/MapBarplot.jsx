@@ -6,7 +6,7 @@ const WIDTH = 1000;
 const HEIGHT = 500;
 const MARGIN = { top: 20, right: 40, bottom: 20, left: 10 };
 
-const MAP_WIDTH = 530; // the map lives in x = MARGIN.left ... MAP_WIDTH
+const MAP_WIDTH = 598; // the map lives in x = MARGIN.left ... MAP_WIDTH (just before the country names)
 const LINK_END_X = 610; // where the lines arrive...
 const NAME_X = LINK_END_X + 8; // ...and the country names start, left-aligned
 const NUMBER_RIGHT_X = LINK_END_X + 168; // bold counts END here (right-aligned)
@@ -115,7 +115,7 @@ export const MapBarplot = ({
   //    - a region with no students yet (Africa): that region's fixed box
   //    Equal Earth: an equal-area projection, so country sizes are honest.
   const targetView = useMemo(() => {
-    let shape = countries;
+    let shape = countries; // "All": the whole world, every country
     if (focus !== "All") {
       const box = data.length > 0 ? boxAroundPoints(data) : EMPTY_BOUNDS[focus];
       if (box) shape = boxToGeo(box);
