@@ -209,7 +209,14 @@ export const MapBarplot = ({ data, geoData, maxValue }) => {
 
   // Drawing order = stacking order: map, then lines, then circles and bars on top
   return (
-    <svg width={WIDTH} height={HEIGHT}>
+    // viewBox = the internal drawing coordinates (1000 x 500).
+    // width="100%" = stretch that drawing to fill the container,
+    // keeping the proportions. Everything scales together: map, lines, bars, text.
+    <svg
+      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+      width="100%"
+      style={{ display: "block", height: "auto" }}
+    >
       <g transform={`translate(0,${MARGIN.top})`}>
         {mapShapes}
         {links}

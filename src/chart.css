@@ -1,5 +1,14 @@
+/* The Vite template's index.css fixes #root at 1126px wide.
+   This lets the page use the full window width instead. */
+#root {
+  width: 100%;
+  border-inline: none;
+}
+
 .chart-container {
-  max-width: 1000px;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 1400px; /* the chart grows up to this width; change it to taste */
   margin: 40px auto;
   padding: 32px;
   border-radius: 12px;
