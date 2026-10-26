@@ -1,9 +1,12 @@
 .chart-container {
   max-width: 1000px;
   margin: 40px auto;
+  padding: 32px;
+  border-radius: 12px;
+  background: #16181d; /* explicit, so the chart looks the same in light or dark mode */
   text-align: left;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: #222;
+  color: #d4d7dd;
 }
 
 .chart-title {
@@ -11,10 +14,63 @@
   font-weight: 700;
   line-height: 1.2;
   margin: 0 0 6px 0;
+  color: #ffffff;
 }
 
 .chart-subtitle {
   font-size: 15px;
-  color: #666;
-  margin: 0 0 24px 0;
+  color: #8a8f99;
+  margin: 0 0 20px 0;
+}
+
+/* ---- Continent filter buttons ---- */
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid #343944;
+  border-radius: 999px; /* pill shape */
+  background: transparent;
+  color: #b5b9c2;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.filter-button:hover {
+  border-color: #ff6fa3;
+  color: #ffffff;
+}
+
+.filter-button:focus-visible {
+  outline: 2px solid #ff6fa3;
+  outline-offset: 2px;
+}
+
+.filter-button.active {
+  background: #ff6fa3;
+  border-color: #ff6fa3;
+  color: #16181d;
+  font-weight: 600;
+}
+
+.filter-count {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.filter-button.active .filter-count {
+  background: rgba(22, 24, 29, 0.2);
 }
