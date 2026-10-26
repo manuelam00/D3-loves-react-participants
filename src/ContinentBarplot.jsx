@@ -2,40 +2,83 @@ import { useMemo } from "react";
 import * as d3 from "d3";
 import { COLORS } from "./colors";
 
-// Internal drawing size; the SVG scales to the container width (viewBox)
+// ---- Layout (internal drawing size; the SVG scales to the container width) ----
 const WIDTH = 1000;
 const ROW_STEP = 30; // height of one continent row
 const BAR_THICKNESS = 8;
-const LABEL_WIDTH = 160; // room for "North America"
-const VALUE_WIDTH = 110; // room for "117 · 50%" after the longest bar
-const PADDING_Y = 6;
+const PADDING_TOP = 6;
+const AXIS_HEIGHT = 28; // room under the rows for the "0%" and "100%" labels
+
+// Columns, from left to right:
+//   [ continent, right-aligned ] [ % in bold, right-aligned ] [ bar ......... ] [ count ]
+const CONTINENT_RIGHT_X = 140; // continent names END here
+const PERCENT_RIGHT_X = 215; // percentages END here
+const BAR_START_X = 230; // bars (and the 0% line) start here
+const BAR_END_X = WIDTH - 50; // the 100% line
+
+const GRID_TICKS = [0, 25, 50, 75, 100]; // light vertical lines
+const LABELLED_TICKS = [0, 100]; // only these get a label
+
+const formatPercent = d3.format(".1f"); // 50.4
 
 // data: [{ continent, students }], including continents with 0 students
 export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
+  // Add each continent's share of all students, in percent (0 – 100)
   const sortedData = useMemo(
-    () => [...data].sort((a, b) => b.students - a.students),
-    [data]
+    () =>
+      data
+        .map((d) => ({ ...d, percent: total ? (d.students / total) * 100 : 0 }))
+        .sort((a, b) => b.students - a.students),
+    [data, total]
   );
 
-  const height = sortedData.length * ROW_STEP + PADDING_Y * 2;
-  const barMaxWidth = WIDTH - LABEL_WIDTH - VALUE_WIDTH;
+  const rowsHeight = sortedData.length * ROW_STEP;
+  const height = PADDING_TOP + rowsHeight + AXIS_HEIGHT;
 
   const yScale = d3
     .scaleBand()
     .domain(sortedData.map((d) => d.continent))
-    .range([PADDING_Y, height - PADDING_Y]);
+    .range([PADDING_TOP, PADDING_TOP + rowsHeight]);
 
+  // The bar length is the PERCENTAGE: 0% -> no bar, 100% -> the full width
   const xScale = d3
     .scaleLinear()
-    .domain([0, d3.max(sortedData, (d) => d.students) || 1])
-    .range([0, barMaxWidth]);
+    .domain([0, 100])
+    .range([BAR_START_X, BAR_END_X]);
 
+  // ---- Grid and axis ------------------------------------------------------
+  const grid = GRID_TICKS.map((tick) => (
+    <g key={tick}>
+      <line
+        x1={xScale(tick)}
+        x2={xScale(tick)}
+        y1={PADDING_TOP}
+        y2={PADDING_TOP + rowsHeight}
+        stroke={COLORS.grid}
+        strokeWidth={1}
+        strokeDasharray={tick === 0 ? undefined : "2 4"} // solid baseline, dotted guides
+      />
+      {LABELLED_TICKS.includes(tick) && (
+        <text
+          x={xScale(tick)}
+          y={PADDING_TOP + rowsHeight + 18}
+          textAnchor="middle"
+          fontSize={11}
+          fill={COLORS.value}
+        >
+          {tick}%
+        </text>
+      )}
+    </g>
+  ));
+
+  // ---- Rows ---------------------------------------------------------------
   const rows = sortedData.map((d) => {
     const isSelected = selected === d.continent;
     const isDimmed = selected !== "All" && !isSelected;
     const yMid = yScale(d.continent) + yScale.bandwidth() / 2;
-    const w = xScale(d.students);
-    const share = total ? Math.round((d.students / total) * 100) : 0;
+    const barWidth = xScale(d.percent) - BAR_START_X;
+    const barEnd = BAR_START_X + Math.max(barWidth, d.students > 0 ? BAR_THICKNESS : 0);
 
     // Clicking a selected continent again goes back to "All"
     const select = () => onSelect(isSelected ? "All" : d.continent);
@@ -46,7 +89,7 @@ export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
         role="button"
         tabIndex={0}
         aria-pressed={isSelected}
-        aria-label={`${d.continent}: ${d.students} students`}
+        aria-label={`${d.continent}: ${formatPercent(d.percent)}%, ${d.students} students`}
         onClick={select}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -69,56 +112,67 @@ export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
           height={yScale.bandwidth()}
           fill="transparent"
         />
+
+        {/* Continent, right-aligned (textAnchor="end" = the text ENDS at x) */}
         <text
-          x={0}
+          x={CONTINENT_RIGHT_X}
           y={yMid}
+          textAnchor="end"
           dominantBaseline="middle"
-          fontSize={13}
-          fill={COLORS.label}
+          fontSize={12}
+          fill={isSelected ? COLORS.label : COLORS.value}
           fontWeight={isSelected ? 700 : 400}
         >
           {d.continent}
         </text>
-        {/* Background track: shows the full scale, so an empty bar still reads as "0 of a lot" */}
-        <rect
-          x={LABEL_WIDTH}
-          y={yMid - BAR_THICKNESS / 2}
-          width={barMaxWidth}
-          height={BAR_THICKNESS}
-          rx={BAR_THICKNESS / 2}
-          fill={COLORS.track}
-        />
-        {w > 0 && (
+
+        {/* Percentage, bold, right-aligned so the decimals line up */}
+        <text
+          x={PERCENT_RIGHT_X}
+          y={yMid}
+          textAnchor="end"
+          dominantBaseline="middle"
+          fontSize={15}
+          fontWeight={700}
+          fill={isSelected ? COLORS.accent : COLORS.label}
+        >
+          {formatPercent(d.percent)}%
+        </text>
+
+        {/* The bar: its length is the percentage */}
+        {d.students > 0 && (
           <rect
-            x={LABEL_WIDTH}
+            x={BAR_START_X}
             y={yMid - BAR_THICKNESS / 2}
-            width={Math.max(w, BAR_THICKNESS)} // tiny values still show as a dot
+            width={Math.max(barWidth, BAR_THICKNESS)} // tiny values still show as a dot
             height={BAR_THICKNESS}
             rx={BAR_THICKNESS / 2}
             fill={isSelected ? COLORS.accent : COLORS.bar}
           />
         )}
+
+        {/* Number of students, just after the bar */}
         <text
-          x={LABEL_WIDTH + Math.max(w, BAR_THICKNESS) + 12}
+          x={barEnd + 8}
           y={yMid}
           dominantBaseline="middle"
           fontSize={12}
+          fill={COLORS.value}
         >
-          <tspan fill={COLORS.label} fontWeight={700}>
-            {d.students}
-          </tspan>
-          <tspan fill={COLORS.value}> · {share}%</tspan>
+          {d.students}
         </text>
       </g>
     );
   });
 
+  // The grid is drawn first, so the bars sit on top of the lines
   return (
     <svg
       viewBox={`0 0 ${WIDTH} ${height}`}
       width="100%"
       style={{ display: "block", height: "auto" }}
     >
+      {grid}
       {rows}
     </svg>
   );
