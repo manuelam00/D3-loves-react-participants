@@ -4,8 +4,8 @@ import { COLORS } from "./colors";
 
 // ---- Layout (internal drawing size; the SVG scales to the container width) ----
 const WIDTH = 1000;
-const ROW_STEP = 30; // height of one continent row
-const BAR_THICKNESS = 8;
+const ROW_STEP = 36; // height of one continent row
+const BAR_THICKNESS = 16;
 const PADDING_TOP = 6;
 const AXIS_HEIGHT = 28; // room under the rows for the "0%" and "100%" labels
 
@@ -16,7 +16,7 @@ const PERCENT_RIGHT_X = 215; // percentages END here
 const BAR_START_X = 230; // bars (and the 0% line) start here
 const BAR_END_X = WIDTH - 50; // the 100% line
 
-const GRID_TICKS = [0, 25, 50, 75, 100]; // light vertical lines
+const GRID_TICKS = [25, 50, 75, 100]; // light vertical lines (no line at 0%)
 const LABELLED_TICKS = [0, 100]; // only these get a label
 
 const formatPercent = d3.format(".1f"); // 50.4
@@ -47,29 +47,31 @@ export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
     .range([BAR_START_X, BAR_END_X]);
 
   // ---- Grid and axis ------------------------------------------------------
-  const grid = GRID_TICKS.map((tick) => (
-    <g key={tick}>
-      <line
-        x1={xScale(tick)}
-        x2={xScale(tick)}
-        y1={PADDING_TOP}
-        y2={PADDING_TOP + rowsHeight}
-        stroke={COLORS.grid}
-        strokeWidth={1}
-        strokeDasharray={tick === 0 ? undefined : "2 4"} // solid baseline, dotted guides
-      />
-      {LABELLED_TICKS.includes(tick) && (
-        <text
-          x={xScale(tick)}
-          y={PADDING_TOP + rowsHeight + 18}
-          textAnchor="middle"
-          fontSize={11}
-          fill={COLORS.value}
-        >
-          {tick}%
-        </text>
-      )}
-    </g>
+  // Lines and labels are separate lists: 0% has a label but no line
+  const gridLines = GRID_TICKS.map((tick) => (
+    <line
+      key={tick}
+      x1={xScale(tick)}
+      x2={xScale(tick)}
+      y1={PADDING_TOP}
+      y2={PADDING_TOP + rowsHeight}
+      stroke={COLORS.grid}
+      strokeWidth={1}
+      strokeDasharray="2 4"
+    />
+  ));
+
+  const axisLabels = LABELLED_TICKS.map((tick) => (
+    <text
+      key={tick}
+      x={xScale(tick)}
+      y={PADDING_TOP + rowsHeight + 18}
+      textAnchor="middle"
+      fontSize={11}
+      fill={COLORS.value}
+    >
+      {tick}%
+    </text>
   ));
 
   // ---- Rows ---------------------------------------------------------------
@@ -172,7 +174,8 @@ export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
       width="100%"
       style={{ display: "block", height: "auto" }}
     >
-      {grid}
+      {gridLines}
+      {axisLabels}
       {rows}
     </svg>
   );

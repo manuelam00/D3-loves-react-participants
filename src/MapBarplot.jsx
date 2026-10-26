@@ -12,7 +12,7 @@ const LINK_END_X = 640; // where the lines arrive, just left of the labels
 const LABEL_WIDTH = 110; // room for "United Kingdom"
 const BAR_START_X = LINK_END_X + LABEL_WIDTH; // bars start here
 const ROW_STEP = 23; // fixed height per country row, so filtering doesn't create giant bars
-const BAR_THICKNESS = 7; // bars are thinner than their row, for the rounded "pill" look
+const BAR_THICKNESS = 12; // bars are thinner than their row, for the rounded "pill" look
 
 // Colours live in colors.js, shared with the continent chart.
 // One accent colour (pink) ties each country's circle to its line.
