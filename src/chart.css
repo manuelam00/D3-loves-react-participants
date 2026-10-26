@@ -1,0 +1,20 @@
+.chart-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  text-align: left;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #222;
+}
+
+.chart-title {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 6px 0;
+}
+
+.chart-subtitle {
+  font-size: 15px;
+  color: #666;
+  margin: 0 0 24px 0;
+}
