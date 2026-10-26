@@ -17,7 +17,7 @@ export const MapBarplot = ({ data, geoData }) => {
 
   const sortedData = useMemo(
     () => [...data].sort((a, b) => b.students - a.students),
-    [data]
+    [data],
   );
 
   // ---- Map: remove Antarctica, then fit the projection into the map area ----
@@ -25,23 +25,23 @@ export const MapBarplot = ({ data, geoData }) => {
     () => ({
       type: "FeatureCollection",
       features: geoData.features.filter(
-        (f) => f.properties.name !== "Antarctica"
+        (f) => f.properties.name !== "Antarctica",
       ),
     }),
-    [geoData]
+    [geoData],
   );
 
   // A projection turns [longitude, latitude] into [x, y] pixels
   const projection = useMemo(
     () =>
-      d3.geoNaturalEarth1().fitExtent(
+      d3.geoEqualEarth().fitExtent(
         [
           [MARGIN.left, 0],
           [MAP_WIDTH, boundsHeight],
         ],
-        countries
+        countries,
       ),
-    [countries, boundsHeight]
+    [countries, boundsHeight],
   );
 
   // geoPath turns a country shape into an SVG path string ("M...L...Z")
@@ -57,7 +57,7 @@ export const MapBarplot = ({ data, geoData }) => {
         .domain(sortedData.map((d) => d.country))
         .range([0, boundsHeight])
         .padding(0.25),
-    [sortedData, boundsHeight]
+    [sortedData, boundsHeight],
   );
 
   const xScale = d3.scaleLinear().domain([0, max]).range([0, barMaxWidth]);
