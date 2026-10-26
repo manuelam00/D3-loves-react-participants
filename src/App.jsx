@@ -317,10 +317,12 @@ export default function App() {
             rel="noopener noreferrer"
           >
             Join the waitlist for the course
+            <span className="visually-hidden"> (opens in a new tab)</span>
           </a>
           , taught by{" "}
           <a href="https://www.yan-holtz.com/" target="_blank" rel="noopener noreferrer">
             Yan Holtz
+            <span className="visually-hidden"> (opens in a new tab)</span>
           </a>
           .
         </p>

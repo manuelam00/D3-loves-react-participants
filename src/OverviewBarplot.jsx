@@ -100,6 +100,7 @@ export const OverviewBarplot = ({
     return (
       <g
         key={d.name}
+        className="chart-row"
         role="button"
         tabIndex={0}
         aria-pressed={isSelected}
@@ -111,15 +112,13 @@ export const OverviewBarplot = ({
             select();
           }
         }}
-        style={{
-          cursor: "pointer",
-          outline: "none",
-          opacity: isDimmed ? 0.35 : 1,
-          transition: "opacity 0.2s",
-        }}
+        style={{ cursor: "pointer", outline: "none" }} // focus is drawn by .row-hit in chart.css
       >
-        {/* Invisible full-row rectangle: the whole row is clickable */}
+        {/* Invisible full-row rectangle: the whole row is clickable,
+            and it gets an outline when the row has keyboard focus */}
         <rect
+          className="row-hit"
+          rx={6}
           x={0}
           y={yScale(d.name)}
           width={WIDTH}
@@ -148,7 +147,7 @@ export const OverviewBarplot = ({
           dominantBaseline="middle"
           fontSize={20}
           fontWeight={700}
-          fill={isSelected ? COLORS.accent : COLORS.label}
+          fill={isSelected ? COLORS.accent : isDimmed ? COLORS.value : COLORS.label}
         >
           {formatPercent(d.percent)}%
         </text>
@@ -162,6 +161,9 @@ export const OverviewBarplot = ({
             height={BAR_THICKNESS}
             rx={BAR_THICKNESS / 2}
             fill={isSelected ? COLORS.accent : COLORS.bar}
+            // Only the bar fades: the text stays readable (contrast)
+            opacity={isDimmed ? 0.35 : 1}
+            style={{ transition: "opacity 0.2s" }}
           />
         )}
 

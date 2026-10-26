@@ -68,6 +68,16 @@ const boxToGeo = ([w, s, e, n]) => {
 
 const ZOOM_DURATION = 800; // ms
 
+// True if the visitor asked their system for less motion (accessibility setting).
+// Then the map jumps instead of zooming, and the "waiting" dot doesn't pulse.
+const prefersReducedMotion = () => {
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+};
+
 export const MapBarplot = ({
   data,
   geoData,
@@ -132,7 +142,8 @@ export const MapBarplot = ({
     const start = performance.now();
 
     const tick = (now) => {
-      const t = Math.min(1, (now - start) / ZOOM_DURATION);
+      const duration = prefersReducedMotion() ? 0 : ZOOM_DURATION;
+      const t = duration === 0 ? 1 : Math.min(1, (now - start) / duration);
       const v = interpolate(d3.easeCubicInOut(t)); // ease = slow start & end
       // Copy into a NEW object, so React sees a change and re-renders
       const next = { scale: v.scale, translate: [...v.translate] };
@@ -180,9 +191,12 @@ export const MapBarplot = ({
 
   // The same two handlers are attached to the bar row and to the circle,
   // so hovering either one highlights the whole country.
+  // onFocus / onBlur do the same for keyboard users (Tab through the countries)
   const hoverProps = (country) => ({
     onMouseEnter: () => setHovered(country),
     onMouseLeave: () => setHovered(null),
+    onFocus: () => setHovered(country),
+    onBlur: () => setHovered(null),
     style: { cursor: "pointer" },
   });
 
@@ -261,15 +275,17 @@ export const MapBarplot = ({
     return (
       <g
         key={d.country}
+        className="chart-row"
+        tabIndex={0} // reachable with the Tab key
+        aria-label={`${d.country}: ${d.students} students`}
         {...hoverProps(d.country)}
-        style={{
-          ...hoverProps(d.country).style,
-          opacity: isDimmed(d.country) ? 0.3 : 1,
-          transition: "opacity 0.2s",
-        }}
+        style={{ ...hoverProps(d.country).style, outline: "none" }}
       >
-        {/* Invisible rectangle covering the whole row: a big, easy hover target */}
+        {/* Invisible rectangle covering the whole row: a big, easy hover target,
+            outlined when the row has keyboard focus (see .row-hit in chart.css) */}
         <rect
+          className="row-hit"
+          rx={6}
           x={LINK_END_X}
           y={y - gap / 2}
           width={WIDTH - MARGIN.right - LINK_END_X}
@@ -296,7 +312,7 @@ export const MapBarplot = ({
           dominantBaseline="middle"
           fontSize={16}
           fontWeight={700}
-          fill={COLORS.label}
+          fill={isDimmed(d.country) ? COLORS.value : COLORS.label}
         >
           {d.students}
         </text>
@@ -309,6 +325,9 @@ export const MapBarplot = ({
           height={BAR_THICKNESS}
           rx={BAR_THICKNESS / 2}
           fill={COLORS.bar}
+          // Only the bar fades: the text stays readable (contrast)
+          opacity={isDimmed(d.country) ? 0.3 : 1}
+          style={{ transition: "opacity 0.2s" }}
         />
       </g>
     );
@@ -336,8 +355,12 @@ export const MapBarplot = ({
         />
         {/* A gently pulsing dot: someone is on their way... */}
         <circle cx={cx} cy={cy} r={6} fill={COLORS.accent} fillOpacity={0.2}>
-          <animate attributeName="r" values="6;18;6" dur="2.4s" repeatCount="indefinite" />
-          <animate attributeName="fill-opacity" values="0.35;0;0.35" dur="2.4s" repeatCount="indefinite" />
+          {!prefersReducedMotion() && (
+            <>
+              <animate attributeName="r" values="6;18;6" dur="2.4s" repeatCount="indefinite" />
+              <animate attributeName="fill-opacity" values="0.35;0;0.35" dur="2.4s" repeatCount="indefinite" />
+            </>
+          )}
         </circle>
         <circle cx={cx} cy={cy} r={3} fill={COLORS.accent} />
 

@@ -17,11 +17,11 @@ export const THEMES = {
     bg: "#f5f4f0",
     land: "#e3e1da",
     landStroke: "#f5f4f0",
-    accent: "#d6336c", // a deeper pink: readable on a light background
+    accent: "#c2255c", // a deeper pink: passes contrast (5.1:1) on the light background
     bar: "#587676", // deeper teal from the mosaic, for contrast on light
     track: "#e8e6e0",
     grid: "#cfccc4",
     label: "#1b1b1f",
-    value: "#6b6f73",
+    value: "#63676b",
   },
 };
