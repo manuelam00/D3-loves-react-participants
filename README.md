@@ -2,7 +2,7 @@
 
 ![A world map and bar charts showing where the course students are based](docs/Screenshot.png)
 
-An interactive snapshot of where the students of cohort 1 of Yan Holtz's D3 ❤️ React course are based: 232 students from 20 countries, explored by world region and then country by country.
+An interactive snapshot of where cohort 1 students of Yan Holtz's D3 ❤️ React course are based, broken down by world region and then by country.
 
 > 🎓 This is a **learning project** I built to practice React and D3 during [Yan Holtz's D3 ❤️ React course](https://www.react-graph-gallery.com/react-d3-dataviz-course).
 
@@ -20,7 +20,7 @@ An interactive snapshot of where the students of cohort 1 of Yan Holtz's D3 ❤�
 | Layer     | Tools                                                                  |
 | --------- | ---------------------------------------------------------------------- |
 | Framework | React + Vite                                                           |
-| Charts    | D3 for the maths (scales, Equal Earth projection, curves), React for the rendering |
+| Charts    | D3 for the math (scales, Equal Earth projection, curves), React for the rendering |
 | Data      | Static JSON files                                                      |
 
 ## 📦 Data
