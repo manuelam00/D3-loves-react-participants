@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
+import { COLORS } from "./colors";
 
 // ---- Layout (all in pixels) ---------------------------------------------
 const WIDTH = 1000;
@@ -13,17 +14,9 @@ const BAR_START_X = LINK_END_X + LABEL_WIDTH; // bars start here
 const ROW_STEP = 23; // fixed height per country row, so filtering doesn't create giant bars
 const BAR_THICKNESS = 7; // bars are thinner than their row, for the rounded "pill" look
 
-// ---- Colours for a dark background -------------------------------------------
+// Colours live in colors.js, shared with the continent chart.
 // One accent colour (pink) ties each country's circle to its line.
 // The map is deliberately quiet: it's context, not the main message.
-const COLORS = {
-  land: "#2a2e37",
-  landStroke: "#16181d",
-  accent: "#ff6fa3",
-  bar: "#5cc8b0",
-  label: "#d4d7dd",
-  value: "#8a8f99",
-};
 
 // ---- Zoom areas per continent ---------------------------------------------
 // [west, south, east, north] in degrees of longitude / latitude.
@@ -34,6 +27,17 @@ const CONTINENT_BOUNDS = {
   "South America": [-82, -56, -34, 13],
   Asia: [25, -11, 150, 60],
   Oceania: [110, -48, 180, 0],
+  Africa: [-20, -36, 53, 38],
+};
+
+// Used in the "no students yet" message
+const CONTINENT_ADJECTIVES = {
+  Europe: "European",
+  "North America": "North American",
+  "South America": "South American",
+  Asia: "Asian",
+  Oceania: "Oceanian",
+  Africa: "African",
 };
 
 // Turns a [west, south, east, north] box into GeoJSON points along its edges.
@@ -274,6 +278,47 @@ export const MapBarplot = ({ data, geoData, maxValue, continent = "All" }) => {
     );
   });
 
+  // ---- Empty state: a continent with no students (yet!) --------------------
+  // A dashed line leaves the continent and ends at a message where the bars would be.
+  let emptyState = null;
+  const box = CONTINENT_BOUNDS[continent];
+  if (sortedData.length === 0 && box) {
+    const [w, s, e, n] = box;
+    const [cx, cy] = projection([(w + e) / 2, (s + n) / 2]); // centre of the continent
+    const msgX = (LINK_END_X + WIDTH - MARGIN.right) / 2; // centre of the bar area
+    const msgY = boundsHeight / 2;
+
+    emptyState = (
+      <g>
+        <path
+          d={linkGenerator({ source: [cx, cy], target: [LINK_END_X - 10, msgY] })}
+          fill="none"
+          stroke={COLORS.accent}
+          strokeOpacity={0.6}
+          strokeWidth={1.5}
+          strokeDasharray="4 6"
+        />
+        {/* A gently pulsing dot: someone is on their way... */}
+        <circle cx={cx} cy={cy} r={6} fill={COLORS.accent} fillOpacity={0.2}>
+          <animate attributeName="r" values="6;18;6" dur="2.4s" repeatCount="indefinite" />
+          <animate attributeName="fill-opacity" values="0.35;0;0.35" dur="2.4s" repeatCount="indefinite" />
+        </circle>
+        <circle cx={cx} cy={cy} r={3} fill={COLORS.accent} />
+
+        <text x={msgX} y={msgY - 14} textAnchor="middle" fontSize={19} fill={COLORS.label}>
+          Waiting for future students
+        </text>
+        <text x={msgX} y={msgY + 14} textAnchor="middle" fontSize={19} fill={COLORS.label}>
+          from the{" "}
+          <tspan fontStyle="italic" fontWeight={700} fill={COLORS.accent}>
+            {CONTINENT_ADJECTIVES[continent] ?? continent}
+          </tspan>{" "}
+          continent!
+        </text>
+      </g>
+    );
+  }
+
   // Drawing order = stacking order: map, then lines, then circles and bars on top
   return (
     // viewBox = the internal drawing coordinates (1000 x 500).
@@ -301,6 +346,7 @@ export const MapBarplot = ({ data, geoData, maxValue, continent = "All" }) => {
         {links}
         {circles}
         {bars}
+        {emptyState}
       </g>
     </svg>
   );
