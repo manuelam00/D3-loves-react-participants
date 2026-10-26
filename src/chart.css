@@ -535,3 +535,108 @@ html[data-theme="dark"] .theme-icon:nth-of-type(2) {
   font-size: 13px;
   color: var(--text-muted);
 }
+
+/* ---- Section title with the Region / Sub-region switch on the right ---- */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* the title inside it doesn't need its own line any more */
+.section-header .section-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.level-switch {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--button-border);
+  border-radius: 999px;
+}
+
+.level-option {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.level-option:hover {
+  color: var(--text);
+}
+
+.level-option.active {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.level-option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- Sub-region buttons, one row per region ---- */
+
+.subregion-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.subregion-filter > .filter-button {
+  align-self: flex-start;
+  margin-bottom: 6px;
+}
+
+.subregion-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.subregion-region {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.subregion-row .filter-buttons {
+  margin: 0;
+}
+
+/* sub-regions with no students yet: quieter, dashed */
+.filter-button.is-empty {
+  border-style: dashed;
+}
+
+/* the sub-regions of a region picked in the top chart */
+.filter-button.in-selection {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .subregion-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}

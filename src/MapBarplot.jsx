@@ -22,23 +22,17 @@ const BAR_THICKNESS = 12; // bars are thinner than their row, for the rounded "p
 // [west, south, east, north] in degrees of longitude / latitude.
 // When a continent HAS students, the map zooms to fit their locations
 // (see boxAroundPoints). These fixed boxes are only used for regions with no students yet.
-const REGION_BOUNDS = {
-  Europe: [-25, 34, 45, 71],
-  "Northern America": [-170, 15, -50, 75],
-  "Latin America and the Caribbean": [-118, -56, -34, 33],
-  Asia: [25, -11, 150, 60],
-  Oceania: [110, -48, 180, 0],
+const EMPTY_BOUNDS = {
+  // regions
   Africa: [-20, -36, 53, 38],
-};
-
-// Used in the "no students yet" message
-const REGION_ADJECTIVES = {
-  Europe: "European",
-  "Northern America": "Northern American",
-  "Latin America and the Caribbean": "Latin American",
-  Asia: "Asian",
-  Oceania: "Oceanian",
-  Africa: "African",
+  // sub-regions with no students yet
+  "Northern Africa": [-18, 14, 38, 38],
+  "Sub-Saharan Africa": [-18, -36, 52, 22],
+  "Central Asia": [46, 35, 88, 56],
+  "Eastern Asia": [73, 18, 146, 54],
+  Melanesia: [140, -25, 180, 0],
+  Micronesia: [130, -2, 180, 22],
+  Polynesia: [-180, -30, -125, 25],
 };
 
 // A box around the students' locations, with some padding, and never too small
@@ -78,7 +72,7 @@ export const MapBarplot = ({
   data,
   geoData,
   maxValue,
-  continent = "All", // the selected continent
+  focus = "All", // the selected region or sub-region ("All" = whole world)
   colors: COLORS, // the current theme's palette, from colors.js via App
 }) => {
   // Which country is under the mouse? null = none.
@@ -112,8 +106,8 @@ export const MapBarplot = ({
   //    Equal Earth: an equal-area projection, so country sizes are honest.
   const targetView = useMemo(() => {
     let shape = countries;
-    if (continent !== "All") {
-      const box = data.length > 0 ? boxAroundPoints(data) : REGION_BOUNDS[continent];
+    if (focus !== "All") {
+      const box = data.length > 0 ? boxAroundPoints(data) : EMPTY_BOUNDS[focus];
       if (box) shape = boxToGeo(box);
     }
     const p = d3.geoEqualEarth().fitExtent(
@@ -124,7 +118,7 @@ export const MapBarplot = ({
       shape
     );
     return { scale: p.scale(), translate: p.translate() };
-  }, [continent, data, countries, boundsHeight]);
+  }, [focus, data, countries, boundsHeight]);
 
   // 2) CURRENT VIEW: what is drawn right now. During a zoom it moves,
   //    frame by frame, from the old view to the target view.
@@ -320,13 +314,13 @@ export const MapBarplot = ({
     );
   });
 
-  // ---- Empty state: a region with no students (yet!) --------------------
+  // ---- Empty state: a region or sub-region with no students (yet!) ----------
   // A dashed line leaves the region and ends at a message where the bars would be.
   let emptyState = null;
-  const box = REGION_BOUNDS[continent];
+  const box = EMPTY_BOUNDS[focus];
   if (sortedData.length === 0 && box) {
     const [w, s, e, n] = box;
-    const [cx, cy] = projection([(w + e) / 2, (s + n) / 2]); // centre of the continent
+    const [cx, cy] = projection([(w + e) / 2, (s + n) / 2]); // centre of the area
     const msgX = (LINK_END_X + WIDTH - MARGIN.right) / 2; // centre of the bar area
     const msgY = boundsHeight / 2;
 
@@ -351,11 +345,11 @@ export const MapBarplot = ({
           Waiting for future students
         </text>
         <text x={msgX} y={msgY + 16} textAnchor="middle" fontSize={22} fill={COLORS.label}>
-          from the{" "}
+          from{" "}
           <tspan fontStyle="italic" fontWeight={700} fill={COLORS.accent}>
-            {REGION_ADJECTIVES[continent] ?? continent}
-          </tspan>{" "}
-          continent!
+            {focus}
+          </tspan>
+          !
         </text>
       </g>
     );

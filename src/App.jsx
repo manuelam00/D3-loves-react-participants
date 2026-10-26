@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MapBarplot } from "./MapBarplot";
-import { ContinentBarplot } from "./ContinentBarplot";
+import { OverviewBarplot } from "./OverviewBarplot";
 import { ThemeToggle } from "./ThemeToggle";
 import { Footer } from "./Footer";
 import { THEMES } from "./colors";
@@ -9,42 +9,45 @@ import isoRegions from "./iso-regions.json"; // the ISO 3166 file with UN region
 import worldData from "./world.json";
 import "./chart.css";
 
-// ---- Continent of each country, from the ISO file -----------------------
-// We use the ISO "region" (Europe, Asia, Oceania, Africa), except for the Americas,
-// where we use the file's own sub-regions: Northern America and
-// Latin America and the Caribbean.
-const continentOf = (c) => (c.region === "Americas" ? c["sub-region"] : c.region);
-
-// ---- Join: add each country's continent from the ISO file ----
+// ---- Join: add each country's region and sub-region from the ISO file ----
 // data.json has an ISO "code" (alpha-3, e.g. "FRA") for each country.
 // We look it up in the ISO file, like a VLOOKUP / a join in SQL.
-const CONTINENT_BY_CODE = Object.fromEntries(
-  isoRegions.map((c) => [c["alpha-3"], continentOf(c)])
+const GEO_BY_CODE = Object.fromEntries(
+  isoRegions.map((c) => [c["alpha-3"], { region: c.region, subregion: c["sub-region"] }])
 );
-const data = rawData.map((d) => ({ ...d, continent: CONTINENT_BY_CODE[d.code] }));
+const data = rawData.map((d) => ({ ...d, ...GEO_BY_CODE[d.code] }));
 
-// The continents, used by both charts and the buttons (Africa included, even with 0)
-const CONTINENTS = [
-  "Europe",
-  "Northern America",
-  "Latin America and the Caribbean",
-  "Asia",
-  "Oceania",
-  "Africa",
-];
+// All 5 regions and 17 sub-regions of the ISO file, alphabetical,
+// including the ones with no students (e.g. Africa, Central Asia).
+const geoRows = isoRegions.filter((c) => c.region && c["sub-region"]);
+const REGIONS = [...new Set(geoRows.map((c) => c.region))].sort();
+const SUBREGIONS_BY_REGION = Object.fromEntries(
+  REGIONS.map((r) => [
+    r,
+    [...new Set(geoRows.filter((c) => c.region === r).map((c) => c["sub-region"]))].sort(),
+  ])
+);
+const REGION_OF_SUBREGION = Object.fromEntries(
+  REGIONS.flatMap((r) => SUBREGIONS_BY_REGION[r].map((s) => [s, r]))
+);
 
 // Computed once from the full dataset, so bars keep the same scale when filtering
 const MAX_STUDENTS = Math.max(...data.map((d) => d.students));
 const TOTAL_STUDENTS = data.reduce((sum, d) => sum + d.students, 0);
 
-// Students per continent, e.g. { continent: "Europe", students: 117 }.
-// Built from the CONTINENTS list (not from the data), so Africa appears with 0.
-const continentTotals = CONTINENTS.map((c) => ({
-  continent: c,
-  students: data
-    .filter((d) => d.continent === c)
-    .reduce((sum, d) => sum + d.students, 0),
+const sumStudents = (rows) => rows.reduce((sum, d) => sum + d.students, 0);
+
+// Students per group, e.g. { name: "Europe", students: 117 }
+const regionTotals = REGIONS.map((r) => ({
+  name: r,
+  students: sumStudents(data.filter((d) => d.region === r)),
 }));
+const subregionTotals = Object.fromEntries(
+  Object.keys(REGION_OF_SUBREGION).map((s) => [
+    s,
+    sumStudents(data.filter((d) => d.subregion === s)),
+  ])
+);
 
 // Decorative mosaic in the "Coming next" box: teal tones from the mosaic palette.
 // Numbers pick a tone, null = an empty dashed tile (students still to come).
@@ -55,8 +58,6 @@ const MOSAIC = [
   5, 2, 3, null, 1, null,
   1, 6, null, null, null, null,
 ];
-
-const buttons = [{ continent: "All", students: TOTAL_STUDENTS }, ...continentTotals];
 
 // Start with the theme the visitor chose last time, otherwise their system setting.
 // (localStorage can be unavailable, e.g. in private windows, hence the try/catch.)
@@ -72,11 +73,17 @@ const getInitialTheme = () => {
 };
 
 export default function App() {
-  // State 1: which continent is selected. Drives both charts and the buttons.
+  // State 1: what is selected. Drives both charts and the buttons.
+  //   { type: "all" }
+  //   { type: "region", name: "Europe" }            <- a bar in the top chart (Region view)
+  //   { type: "subregion", name: "Western Europe" } <- a button, or a bar (Sub-region view)
   // Starts on Africa: the page opens on the "waiting for students" view
-  const [continent, setContinent] = useState("Africa");
+  const [selection, setSelection] = useState({ type: "region", name: "Africa" });
 
-  // State 2: light or dark theme.
+  // State 2: which level the top chart shows
+  const [level, setLevel] = useState("region"); // "region" | "subregion"
+
+  // State 3: light or dark theme.
   const [theme, setTheme] = useState(getInitialTheme);
 
   // Whenever the theme changes: tell the CSS (data-theme on <html>) and remember it
@@ -92,7 +99,33 @@ export default function App() {
   const colors = THEMES[theme];
 
   const filteredData =
-    continent === "All" ? data : data.filter((d) => d.continent === continent);
+    selection.type === "all"
+      ? data
+      : data.filter((d) => d[selection.type] === selection.name);
+
+  // Clicking the selected item again goes back to "all"
+  const toggle = (type, name) =>
+    setSelection(
+      selection.type === type && selection.name === name ? { type: "all" } : { type, name }
+    );
+
+  // Top chart: its rows, and which ones are highlighted
+  const overviewData =
+    level === "region"
+      ? regionTotals
+      : Object.entries(subregionTotals).map(([name, students]) => ({ name, students }));
+
+  let highlighted = [];
+  if (level === "region") {
+    if (selection.type === "region") highlighted = [selection.name];
+    if (selection.type === "subregion") highlighted = [REGION_OF_SUBREGION[selection.name]];
+  } else {
+    if (selection.type === "subregion") highlighted = [selection.name];
+    if (selection.type === "region") highlighted = SUBREGIONS_BY_REGION[selection.name];
+  }
+
+  // Name shown on the map's "waiting" message and used for its zoom
+  const mapFocus = selection.type === "all" ? "All" : selection.name;
 
   return (
     <main className="page">
@@ -156,41 +189,80 @@ export default function App() {
       </header>
 
       <section className="chart-section">
-        <h2 className="section-title">An overview by continent</h2>
-        <ContinentBarplot
-          data={continentTotals}
+        <div className="section-header">
+          <h2 className="section-title">An overview by world region</h2>
+          {/* Region / Sub-region switch for the top chart */}
+          <div className="level-switch" role="group" aria-label="Group by">
+            {[
+              ["region", "Region"],
+              ["subregion", "Sub-region"],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                className={level === value ? "level-option active" : "level-option"}
+                aria-pressed={level === value}
+                onClick={() => setLevel(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <OverviewBarplot
+          data={overviewData}
           total={TOTAL_STUDENTS}
-          selected={continent}
-          onSelect={setContinent}
+          highlighted={highlighted}
+          onRowClick={(name) => toggle(level, name)}
           colors={colors}
         />
         <p className="chart-footnote">
-          Groups follow the UN M49 regions (ISO 3166 country list). For the
-          Americas, we use its two sub-regions: Northern America and Latin
-          America and the Caribbean.
+          Regions and sub-regions follow the UN M49 standard (ISO 3166 country
+          list).
         </p>
       </section>
 
       <section className="chart-section">
         <h2 className="section-title">A deeper look by country</h2>
 
-        <div
-          className="filter-buttons"
-          role="group"
-          aria-label="Filter by continent"
-        >
-          {buttons.map((b) => (
-            <button
-              key={b.continent}
-              className={
-                b.continent === continent ? "filter-button active" : "filter-button"
-              }
-              aria-pressed={b.continent === continent}
-              onClick={() => setContinent(b.continent)}
-            >
-              {b.continent}
-              <span className="filter-count">{b.students}</span>
-            </button>
+        {/* Sub-region buttons, grouped by region (like the ISO table) */}
+        <div className="subregion-filter" role="group" aria-label="Filter by sub-region">
+          <button
+            className={selection.type === "all" ? "filter-button active" : "filter-button"}
+            aria-pressed={selection.type === "all"}
+            onClick={() => setSelection({ type: "all" })}
+          >
+            All
+            <span className="filter-count">{TOTAL_STUDENTS}</span>
+          </button>
+
+          {REGIONS.map((region) => (
+            <div key={region} className="subregion-row">
+              <span className="subregion-region">{region}</span>
+              <div className="filter-buttons">
+                {SUBREGIONS_BY_REGION[region].map((sub) => {
+                  const isActive = selection.type === "subregion" && selection.name === sub;
+                  // Picked as a whole region in the top chart: show its buttons softly
+                  const inRegion = selection.type === "region" && selection.name === region;
+                  return (
+                    <button
+                      key={sub}
+                      className={
+                        "filter-button" +
+                        (isActive ? " active" : "") +
+                        (inRegion ? " in-selection" : "") +
+                        (subregionTotals[sub] === 0 ? " is-empty" : "")
+                      }
+                      aria-pressed={isActive}
+                      onClick={() => toggle("subregion", sub)}
+                    >
+                      {sub}
+                      <span className="filter-count">{subregionTotals[sub]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           ))}
         </div>
 
@@ -198,7 +270,7 @@ export default function App() {
           data={filteredData}
           geoData={worldData}
           maxValue={MAX_STUDENTS}
-          continent={continent}
+          focus={mapFocus}
           colors={colors}
         />
       </section>

@@ -23,31 +23,17 @@ const URL = {
 
 const DATA = [
   <>
-    The numbers show the 232 students of cohort 1 of the course, counted by the
-    country where they are based. Percentages are shares of all 232 students.
-  </>,
-  <>
-    Countries are grouped into continents with the{" "}
+    Countries are grouped into 5 regions and 17 sub-regions with the{" "}
     <a href={URL.isoFile}>ISO 3166 country list with regional codes</a>, which
-    follows the <a href={URL.m49}>UN M49 standard</a>. For the Americas, I use its
-    two sub-regions, Northern America and Latin America and the Caribbean.
+    follows the <a href={URL.m49}>UN M49 standard</a>.
   </>,
   <>
     The world map uses the <a href={URL.worldGeojson}>world GeoJSON</a> from the
     D3 Graph Gallery, drawn with the Equal Earth projection: an equal-area
     projection, so countries keep their true relative size. In September 2026
-    the UN General Assembly{" "}
-    <a href={URL.unNews}>endorsed Equal Earth</a> for world maps (
-    <a href={URL.unResolution}>resolution A/80/L.104</a>). To see how much the
-    usual Mercator map distorts sizes, try <a href={URL.trueSize}>The True Size
-    Of</a>. Each country is placed at an approximate centre point.
-  </>,
-  <>
-    The layout, with bars feeding lines into the map, is inspired by{" "}
-    <a href={URL.hesham}>The Global Journey of Refugees</a> by Hesham Eissa,
-    the winning viz of Tableau's Iron Viz 2019. It is one of the best-known
-    pieces in the Tableau Community, and Tableau is my favourite tool, so it
-    felt natural to bring that idea into D3 and React.
+    the UN General Assembly <a href={URL.unNews}>endorsed Equal Earth</a> for
+    world maps (To see how much the usual Mercator map distorts sizes, try{" "}
+    <a href={URL.trueSize}>The True Size Of</a>).
   </>,
 ];
 
@@ -57,8 +43,10 @@ const LEARN = [
     <a href={URL.course}>Yan Holtz's D3 ❤️ React course</a>.
   </>,
   <>
-    I developed the components with support from Claude, which I used as a
-    coding tutor.
+    The layout, with bars feeding lines into the map, is inspired by{" "}
+    <a href={URL.hesham}>The Global Journey of Refugees</a> by Hesham Eissa, the
+    winning viz of Tableau's Iron Viz 2019. It is one of the best-known pieces
+    in the Tableau Community, my favourite software.
   </>,
   <>
     The code is on <a href={URL.github}>GitHub</a>.
@@ -86,7 +74,7 @@ export const Footer = () => (
 
     {/* Outside the box, centred */}
     <p className="site-credit">
-      MM 2026 for <a href={URL.course}>react-d3-dataviz-course</a>
+      Manuela M. 2026 for <a href={URL.course}>react-d3-dataviz-course</a>
     </p>
   </>
 );
