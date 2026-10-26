@@ -7,20 +7,22 @@ const HEIGHT = 500;
 const MARGIN = { top: 20, right: 40, bottom: 20, left: 10 };
 
 const MAP_WIDTH = 530; // the map lives in x = MARGIN.left ... MAP_WIDTH
-const LINK_END_X = 610; // where the lines arrive, just left of the labels
-const LABEL_WIDTH = 150; // room for "United Kingdom" at 15px
-const BAR_START_X = LINK_END_X + LABEL_WIDTH; // bars start here
-const ROW_STEP = 23; // fixed height per country row, so filtering doesn't create giant bars
+const LINK_END_X = 610; // where the lines arrive...
+const NAME_X = LINK_END_X + 8; // ...and the country names start, left-aligned
+const NUMBER_RIGHT_X = LINK_END_X + 168; // bold counts END here (right-aligned)
+const BAR_START_X = LINK_END_X + 180; // bars start here
+const ROW_STEP = 24; // fixed height per country row, so filtering doesn't create giant bars
 const BAR_THICKNESS = 12; // bars are thinner than their row, for the rounded "pill" look
 
-// Colours live in colors.js, shared with the continent chart.
+// Colours live in colors.js, shared with the overview chart.
 // One accent colour (pink) ties each country's circle to its line.
 // The map is deliberately quiet: it's context, not the main message.
 
-// ---- Zoom areas per continent ---------------------------------------------
+// ---- Zoom areas ------------------------------------------------------------
 // [west, south, east, north] in degrees of longitude / latitude.
-// The map zooms so this box fills the map area.
-const CONTINENT_BOUNDS = {
+// When a continent HAS students, the map zooms to fit their locations
+// (see boxAroundPoints). These fixed boxes are only used for regions with no students yet.
+const REGION_BOUNDS = {
   Europe: [-25, 34, 45, 71],
   "North America": [-170, 7, -50, 75],
   "South America": [-82, -56, -34, 13],
@@ -30,13 +32,34 @@ const CONTINENT_BOUNDS = {
 };
 
 // Used in the "no students yet" message
-const CONTINENT_ADJECTIVES = {
+const REGION_ADJECTIVES = {
   Europe: "European",
   "North America": "North American",
   "South America": "South American",
   Asia: "Asian",
   Oceania: "Oceanian",
   Africa: "African",
+};
+
+// A box around the students' locations, with some padding, and never too small
+// (a single country would otherwise zoom in to a dot).
+const boxAroundPoints = (rows) => {
+  const lons = rows.map((d) => d.lon);
+  const lats = rows.map((d) => d.lat);
+  const MIN_LON_SPAN = 45;
+  const MIN_LAT_SPAN = 28;
+  const PAD = 8;
+  let [w, e] = [d3.min(lons) - PAD, d3.max(lons) + PAD];
+  let [s, n] = [d3.min(lats) - PAD, d3.max(lats) + PAD];
+  if (e - w < MIN_LON_SPAN) {
+    const mid = (w + e) / 2;
+    [w, e] = [mid - MIN_LON_SPAN / 2, mid + MIN_LON_SPAN / 2];
+  }
+  if (n - s < MIN_LAT_SPAN) {
+    const mid = (s + n) / 2;
+    [s, n] = [mid - MIN_LAT_SPAN / 2, mid + MIN_LAT_SPAN / 2];
+  }
+  return [Math.max(w, -180), Math.max(s, -60), Math.min(e, 180), Math.min(n, 80)];
 };
 
 // Turns a [west, south, east, north] box into GeoJSON points along its edges.
@@ -55,7 +78,7 @@ export const MapBarplot = ({
   data,
   geoData,
   maxValue,
-  continent = "All",
+  continent = "All", // the selected continent
   colors: COLORS, // the current theme's palette, from colors.js via App
 }) => {
   // Which country is under the mouse? null = none.
@@ -80,21 +103,28 @@ export const MapBarplot = ({
     [geoData]
   );
 
-  // 1) TARGET VIEW: where the map should end up for the selected continent.
+  // 1) TARGET VIEW: where the map should end up for the current selection.
   //    fitExtent finds the scale + translate that make a shape fill the map area:
-  //    the whole world for "All", the continent's box otherwise.
+  //    - "All": the whole world
+  //    - a selection with students: a box around their locations, so the circles
+  //      spread across the map area and line up nicely with the bars
+  //    - a region with no students yet (Africa): that region's fixed box
   //    Equal Earth: an equal-area projection, so country sizes are honest.
   const targetView = useMemo(() => {
-    const box = CONTINENT_BOUNDS[continent];
+    let shape = countries;
+    if (continent !== "All") {
+      const box = data.length > 0 ? boxAroundPoints(data) : REGION_BOUNDS[continent];
+      if (box) shape = boxToGeo(box);
+    }
     const p = d3.geoEqualEarth().fitExtent(
       [
         [MARGIN.left, 0],
         [MAP_WIDTH, boundsHeight],
       ],
-      box ? boxToGeo(box) : countries
+      shape
     );
     return { scale: p.scale(), translate: p.translate() };
-  }, [continent, countries, boundsHeight]);
+  }, [continent, data, countries, boundsHeight]);
 
   // 2) CURRENT VIEW: what is drawn right now. During a zoom it moves,
   //    frame by frame, from the old view to the target view.
@@ -134,15 +164,17 @@ export const MapBarplot = ({
   // whichever continent is selected.
   const max = maxValue ?? d3.max(sortedData, (d) => d.students) ?? 0;
 
-  const yScale = useMemo(
-    () =>
-      d3
-        .scaleBand()
-        .domain(sortedData.map((d) => d.country))
-        .range([0, Math.min(boundsHeight, sortedData.length * ROW_STEP)])
-        .padding(0.25),
-    [sortedData, boundsHeight]
-  );
+  // The bar block is centred vertically, so with only a few countries the bars
+  // sit in the middle, level with the zoomed map, instead of hugging the top.
+  const yScale = useMemo(() => {
+    const blockHeight = Math.min(boundsHeight, sortedData.length * ROW_STEP);
+    const top = (boundsHeight - blockHeight) / 2;
+    return d3
+      .scaleBand()
+      .domain(sortedData.map((d) => d.country))
+      .range([top, top + blockHeight])
+      .padding(0.25);
+  }, [sortedData, boundsHeight]);
 
   const xScale = d3.scaleLinear().domain([0, max]).range([0, barMaxWidth]);
   const radiusScale = d3.scaleSqrt().domain([0, max]).range([0, 18]);
@@ -250,17 +282,29 @@ export const MapBarplot = ({
           height={yScale.step()}
           fill="transparent"
         />
-        {/* Right-aligned: textAnchor="end" makes the name END at x, just before the bar */}
+        {/* Country name, left-aligned, right where its line arrives */}
         <text
-          x={BAR_START_X - 10}
+          x={NAME_X}
+          y={y + h / 2}
+          dominantBaseline="middle"
+          fontSize={15}
+          fill={isHovered(d.country) ? COLORS.label : COLORS.value}
+          fontWeight={isHovered(d.country) ? 600 : 400}
+        >
+          {d.country}
+        </text>
+        {/* Number of students: bold, right-aligned before the bar
+            (same style as the percentages in the overview chart) */}
+        <text
+          x={NUMBER_RIGHT_X}
           y={y + h / 2}
           textAnchor="end"
           dominantBaseline="middle"
-          fontSize={15}
+          fontSize={16}
+          fontWeight={700}
           fill={COLORS.label}
-          fontWeight={isHovered(d.country) ? 700 : 400}
         >
-          {d.country}
+          {d.students}
         </text>
         {/* Thin, pill-shaped bar, vertically centred in its row.
             rx = half the thickness -> fully rounded ends */}
@@ -272,23 +316,14 @@ export const MapBarplot = ({
           rx={BAR_THICKNESS / 2}
           fill={COLORS.bar}
         />
-        <text
-          x={BAR_START_X + w + 6}
-          y={y + h / 2}
-          dominantBaseline="middle"
-          fontSize={14}
-          fill={isHovered(d.country) ? COLORS.label : COLORS.value}
-        >
-          {d.students}
-        </text>
       </g>
     );
   });
 
-  // ---- Empty state: a continent with no students (yet!) --------------------
-  // A dashed line leaves the continent and ends at a message where the bars would be.
+  // ---- Empty state: a region with no students (yet!) --------------------
+  // A dashed line leaves the region and ends at a message where the bars would be.
   let emptyState = null;
-  const box = CONTINENT_BOUNDS[continent];
+  const box = REGION_BOUNDS[continent];
   if (sortedData.length === 0 && box) {
     const [w, s, e, n] = box;
     const [cx, cy] = projection([(w + e) / 2, (s + n) / 2]); // centre of the continent
@@ -318,7 +353,7 @@ export const MapBarplot = ({
         <text x={msgX} y={msgY + 16} textAnchor="middle" fontSize={22} fill={COLORS.label}>
           from the{" "}
           <tspan fontStyle="italic" fontWeight={700} fill={COLORS.accent}>
-            {CONTINENT_ADJECTIVES[continent] ?? continent}
+            {REGION_ADJECTIVES[continent] ?? continent}
           </tspan>{" "}
           continent!
         </text>

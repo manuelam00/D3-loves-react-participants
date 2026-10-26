@@ -365,3 +365,41 @@ html[data-theme="dark"] .theme-icon:nth-of-type(2) {
     display: none;
   }
 }
+
+/* ---- Note on the data (in the header) ---- */
+
+.data-note {
+  margin: 28px 0 0 0;
+  max-width: 40em;
+  padding: 14px 18px;
+  border-left: 3px solid var(--teal);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--teal) 10%, transparent);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.data-note-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+/* ---- Footnote under the overview chart ---- */
+
+.chart-footnote {
+  margin: 18px 0 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.chart-footnote strong {
+  font-weight: 600;
+  color: var(--text);
+}

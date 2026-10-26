@@ -3,19 +3,31 @@ import { MapBarplot } from "./MapBarplot";
 import { ContinentBarplot } from "./ContinentBarplot";
 import { ThemeToggle } from "./ThemeToggle";
 import { THEMES } from "./colors";
-import data from "./data.json";
+import rawData from "./data.json";
+import isoRegions from "./iso-regions.json"; // the ISO 3166 file with UN regions
 import worldData from "./world.json";
 import "./chart.css";
 
-// Every continent we want to show, including ones with no students yet
-const CONTINENTS = [
-  "Europe",
-  "North America",
-  "South America",
-  "Asia",
-  "Oceania",
-  "Africa",
-];
+// ---- Continent of each country, from the ISO file -----------------------
+// The ISO file has one "Americas" region; we split it into North and South America
+// using its intermediate region (Central America and the Caribbean go with North America).
+const continentOf = (c) =>
+  c.region === "Americas"
+    ? c["intermediate-region"] === "South America"
+      ? "South America"
+      : "North America"
+    : c.region;
+
+// ---- Join: add each country's continent from the ISO file ----
+// data.json has an ISO "code" (alpha-3, e.g. "FRA") for each country.
+// We look it up in the ISO file, like a VLOOKUP / a join in SQL.
+const CONTINENT_BY_CODE = Object.fromEntries(
+  isoRegions.map((c) => [c["alpha-3"], continentOf(c)])
+);
+const data = rawData.map((d) => ({ ...d, continent: CONTINENT_BY_CODE[d.code] }));
+
+// The continents, used by both charts and the buttons (Africa included, even with 0)
+const CONTINENTS = ["Europe", "North America", "South America", "Asia", "Oceania", "Africa"];
 
 // Computed once from the full dataset, so bars keep the same scale when filtering
 const MAX_STUDENTS = Math.max(...data.map((d) => d.students));
@@ -40,10 +52,7 @@ const MOSAIC = [
   1, 6, null, null, null, null,
 ];
 
-const buttons = [
-  { continent: "All", students: TOTAL_STUDENTS },
-  ...continentTotals,
-];
+const buttons = [{ continent: "All", students: TOTAL_STUDENTS }, ...continentTotals];
 
 // Start with the theme the visitor chose last time, otherwise their system setting.
 // (localStorage can be unavailable, e.g. in private windows, hence the try/catch.)
@@ -116,6 +125,13 @@ export default function App() {
           {TOTAL_STUDENTS} students from {data.length} countries. Explore where
           they come from: first by continent, then country by country.
         </p>
+
+        <p className="data-note">
+          <span className="data-note-label">A note on the data</span>
+          Countries show where participants are based, not where they are
+          originally from. A map of countries of origin could tell a very
+          different story.
+        </p>
       </header>
 
       <section className="chart-section">
@@ -127,6 +143,11 @@ export default function App() {
           onSelect={setContinent}
           colors={colors}
         />
+        <p className="chart-footnote">
+          Continents follow the UN M49 regions (ISO 3166 country list), with the
+          Americas split into North America (incl. Central America and the
+          Caribbean) and South America.
+        </p>
       </section>
 
       <section className="chart-section">
@@ -141,9 +162,7 @@ export default function App() {
             <button
               key={b.continent}
               className={
-                b.continent === continent
-                  ? "filter-button active"
-                  : "filter-button"
+                b.continent === continent ? "filter-button active" : "filter-button"
               }
               aria-pressed={b.continent === continent}
               onClick={() => setContinent(b.continent)}
