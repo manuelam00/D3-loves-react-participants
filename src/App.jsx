@@ -238,7 +238,18 @@ export default function App() {
 
           {REGIONS.map((region) => (
             <div key={region} className="subregion-row">
-              <span className="subregion-region">{region}</span>
+              {/* The region name is a button too: it selects the whole region */}
+              <button
+                className={
+                  selection.type === "region" && selection.name === region
+                    ? "region-button active"
+                    : "region-button"
+                }
+                aria-pressed={selection.type === "region" && selection.name === region}
+                onClick={() => toggle("region", region)}
+              >
+                {region}
+              </button>
               <div className="filter-buttons">
                 {SUBREGIONS_BY_REGION[region].map((sub) => {
                   const isActive = selection.type === "subregion" && selection.name === sub;

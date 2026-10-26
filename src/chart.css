@@ -577,7 +577,7 @@ html[data-theme="dark"] .theme-icon:nth-of-type(2) {
 
 .subregion-row {
   display: grid;
-  grid-template-columns: 110px 1fr;
+  grid-template-columns: 128px 1fr;
   align-items: center;
   gap: 12px;
 }
@@ -660,4 +660,37 @@ html[data-theme="dark"] .theme-icon:nth-of-type(2) {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* Region names in the button grid: they look like labels, but are clickable */
+.region-button {
+  justify-self: start;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.region-button:hover {
+  border-color: var(--button-border);
+  color: var(--text);
+}
+
+.region-button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+}
+
+.region-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
