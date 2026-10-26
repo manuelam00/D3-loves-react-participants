@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 
 // ---- Layout (all in pixels) ---------------------------------------------
@@ -25,7 +25,30 @@ const COLORS = {
   value: "#8a8f99",
 };
 
-export const MapBarplot = ({ data, geoData, maxValue }) => {
+// ---- Zoom areas per continent ---------------------------------------------
+// [west, south, east, north] in degrees of longitude / latitude.
+// The map zooms so this box fills the map area.
+const CONTINENT_BOUNDS = {
+  Europe: [-25, 34, 45, 71],
+  "North America": [-170, 7, -50, 75],
+  "South America": [-82, -56, -34, 13],
+  Asia: [25, -11, 150, 60],
+  Oceania: [110, -48, 180, 0],
+};
+
+// Turns a [west, south, east, north] box into GeoJSON points along its edges.
+// (Edges, not just corners: in Equal Earth the meridians are curved.)
+const boxToGeo = ([w, s, e, n]) => {
+  const coordinates = [];
+  for (let lon = w; lon <= e; lon += 5) coordinates.push([lon, s], [lon, n]);
+  for (let lat = s; lat <= n; lat += 5) coordinates.push([w, lat], [e, lat]);
+  coordinates.push([e, s], [e, n]);
+  return { type: "MultiPoint", coordinates };
+};
+
+const ZOOM_DURATION = 800; // ms
+
+export const MapBarplot = ({ data, geoData, maxValue, continent = "All" }) => {
   // Which country is under the mouse? null = none.
   const [hovered, setHovered] = useState(null);
 
@@ -48,17 +71,51 @@ export const MapBarplot = ({ data, geoData, maxValue }) => {
     [geoData]
   );
 
-  // Equal Earth: an equal-area projection, so country sizes are honest
+  // 1) TARGET VIEW: where the map should end up for the selected continent.
+  //    fitExtent finds the scale + translate that make a shape fill the map area:
+  //    the whole world for "All", the continent's box otherwise.
+  //    Equal Earth: an equal-area projection, so country sizes are honest.
+  const targetView = useMemo(() => {
+    const box = CONTINENT_BOUNDS[continent];
+    const p = d3.geoEqualEarth().fitExtent(
+      [
+        [MARGIN.left, 0],
+        [MAP_WIDTH, boundsHeight],
+      ],
+      box ? boxToGeo(box) : countries
+    );
+    return { scale: p.scale(), translate: p.translate() };
+  }, [continent, countries, boundsHeight]);
+
+  // 2) CURRENT VIEW: what is drawn right now. During a zoom it moves,
+  //    frame by frame, from the old view to the target view.
+  const [view, setView] = useState(targetView);
+  const viewRef = useRef(targetView); // same value, readable inside the animation
+
+  useEffect(() => {
+    // d3.interpolate builds a function: 0 -> start view, 1 -> target view
+    const interpolate = d3.interpolate(viewRef.current, targetView);
+    let frame;
+    const start = performance.now();
+
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / ZOOM_DURATION);
+      const v = interpolate(d3.easeCubicInOut(t)); // ease = slow start & end
+      // Copy into a NEW object, so React sees a change and re-renders
+      const next = { scale: v.scale, translate: [...v.translate] };
+      viewRef.current = next;
+      setView(next);
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame); // stop if the user clicks again mid-zoom
+  }, [targetView]);
+
+  // 3) The projection used for drawing is built from the current view
   const projection = useMemo(
-    () =>
-      d3.geoEqualEarth().fitExtent(
-        [
-          [MARGIN.left, 0],
-          [MAP_WIDTH, boundsHeight],
-        ],
-        countries
-      ),
-    [countries, boundsHeight]
+    () => d3.geoEqualEarth().scale(view.scale).translate(view.translate),
+    [view]
   );
 
   const geoPathGenerator = d3.geoPath().projection(projection);
@@ -228,7 +285,19 @@ export const MapBarplot = ({ data, geoData, maxValue }) => {
       style={{ display: "block", height: "auto" }}
     >
       <g transform={`translate(0,${MARGIN.top})`}>
-        {mapShapes}
+        {/* When zoomed in, countries extend beyond the map area.
+            The clip path hides anything outside it, so the map never covers the bars. */}
+        <defs>
+          <clipPath id="map-clip">
+            <rect
+              x={MARGIN.left}
+              y={0}
+              width={MAP_WIDTH - MARGIN.left}
+              height={boundsHeight}
+            />
+          </clipPath>
+        </defs>
+        <g clipPath="url(#map-clip)">{mapShapes}</g>
         {links}
         {circles}
         {bars}

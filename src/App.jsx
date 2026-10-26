@@ -62,6 +62,7 @@ export default function App() {
         data={filteredData}
         geoData={worldData}
         maxValue={MAX_STUDENTS}
+        continent={continent}
       />
     </div>
   );
