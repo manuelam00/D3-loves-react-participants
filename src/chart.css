@@ -332,7 +332,7 @@ html[data-theme="dark"] .theme-icon:nth-of-type(2) {
   color: var(--text-muted);
 }
 
-/* Decorative mosaic, echoing the teal tiles: filled tiles = cohort 2,
+/* Decorative mosaic, echoing the teal tiles: filled tiles = cohort 1,
    dashed empty tiles = students still to come */
 .coming-next-mosaic {
   display: grid;

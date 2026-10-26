@@ -60,7 +60,8 @@ const getInitialTheme = () => {
 
 export default function App() {
   // State 1: which continent is selected. Drives both charts and the buttons.
-  const [continent, setContinent] = useState("All");
+  // Starts on Africa: the page opens on the "waiting for students" view
+  const [continent, setContinent] = useState("Africa");
 
   // State 2: light or dark theme.
   const [theme, setTheme] = useState(getInitialTheme);
@@ -169,14 +170,13 @@ export default function App() {
             Coming next
           </p>
           <h2 className="coming-next-title">
-            This is cohort 2. How will the map change as the next cohort
+            This is cohort 1. How will the map change as the next cohort
             joins?
           </h2>
           <p className="coming-next-body">
-            These numbers capture the students of cohort 2, my own cohort. When
-            the next students arrive, their data will land here too, and we'll
-            see how the mix shifts: new countries, growing communities, and
-            maybe the first students from Africa.
+            These numbers capture the students of cohort 1. With cohort 2
+            starting in October 2026, their data will land here too, and we'll
+            see how the mix shifts: new countries? Growing communities?
           </p>
         </div>
 
