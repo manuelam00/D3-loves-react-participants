@@ -24,8 +24,8 @@ const BAR_THICKNESS = 12; // bars are thinner than their row, for the rounded "p
 // (see boxAroundPoints). These fixed boxes are only used for regions with no students yet.
 const REGION_BOUNDS = {
   Europe: [-25, 34, 45, 71],
-  "North America": [-170, 7, -50, 75],
-  "South America": [-82, -56, -34, 13],
+  "Northern America": [-170, 15, -50, 75],
+  "Latin America and the Caribbean": [-118, -56, -34, 33],
   Asia: [25, -11, 150, 60],
   Oceania: [110, -48, 180, 0],
   Africa: [-20, -36, 53, 38],
@@ -34,8 +34,8 @@ const REGION_BOUNDS = {
 // Used in the "no students yet" message
 const REGION_ADJECTIVES = {
   Europe: "European",
-  "North America": "North American",
-  "South America": "South American",
+  "Northern America": "Northern American",
+  "Latin America and the Caribbean": "Latin American",
   Asia: "Asian",
   Oceania: "Oceanian",
   Africa: "African",

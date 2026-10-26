@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MapBarplot } from "./MapBarplot";
 import { ContinentBarplot } from "./ContinentBarplot";
 import { ThemeToggle } from "./ThemeToggle";
+import { Footer } from "./Footer";
 import { THEMES } from "./colors";
 import rawData from "./data.json";
 import isoRegions from "./iso-regions.json"; // the ISO 3166 file with UN regions
@@ -9,14 +10,10 @@ import worldData from "./world.json";
 import "./chart.css";
 
 // ---- Continent of each country, from the ISO file -----------------------
-// The ISO file has one "Americas" region; we split it into North and South America
-// using its intermediate region (Central America and the Caribbean go with North America).
-const continentOf = (c) =>
-  c.region === "Americas"
-    ? c["intermediate-region"] === "South America"
-      ? "South America"
-      : "North America"
-    : c.region;
+// We use the ISO "region" (Europe, Asia, Oceania, Africa), except for the Americas,
+// where we use the file's own sub-regions: Northern America and
+// Latin America and the Caribbean.
+const continentOf = (c) => (c.region === "Americas" ? c["sub-region"] : c.region);
 
 // ---- Join: add each country's continent from the ISO file ----
 // data.json has an ISO "code" (alpha-3, e.g. "FRA") for each country.
@@ -27,7 +24,14 @@ const CONTINENT_BY_CODE = Object.fromEntries(
 const data = rawData.map((d) => ({ ...d, continent: CONTINENT_BY_CODE[d.code] }));
 
 // The continents, used by both charts and the buttons (Africa included, even with 0)
-const CONTINENTS = ["Europe", "North America", "South America", "Asia", "Oceania", "Africa"];
+const CONTINENTS = [
+  "Europe",
+  "Northern America",
+  "Latin America and the Caribbean",
+  "Asia",
+  "Oceania",
+  "Africa",
+];
 
 // Computed once from the full dataset, so bars keep the same scale when filtering
 const MAX_STUDENTS = Math.max(...data.map((d) => d.students));
@@ -161,9 +165,9 @@ export default function App() {
           colors={colors}
         />
         <p className="chart-footnote">
-          Continents follow the UN M49 regions (ISO 3166 country list), with the
-          Americas split into North America (incl. Central America and the
-          Caribbean) and South America.
+          Groups follow the UN M49 regions (ISO 3166 country list). For the
+          Americas, we use its two sub-regions: Northern America and Latin
+          America and the Caribbean.
         </p>
       </section>
 
@@ -249,6 +253,8 @@ export default function App() {
           .
         </p>
       </footer>
+
+      <Footer />
     </main>
   );
 }

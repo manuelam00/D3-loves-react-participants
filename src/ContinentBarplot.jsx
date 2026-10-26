@@ -10,9 +10,9 @@ const AXIS_HEIGHT = 32; // room under the rows for the "0%" and "100%" labels
 
 // Columns, from left to right:
 //   [ continent, right-aligned ] [ % in bold, right-aligned ] [ bar ......... ] [ count ]
-const CONTINENT_RIGHT_X = 165; // continent names END here
-const PERCENT_RIGHT_X = 255; // percentages END here
-const BAR_START_X = 272; // bars (and the 0% line) start here
+const CONTINENT_RIGHT_X = 285; // names END here ("Latin America and the Caribbean" is long)
+const PERCENT_RIGHT_X = 375; // percentages END here
+const BAR_START_X = 392; // bars (and the 0% line) start here
 const BAR_END_X = WIDTH - 50; // the 100% line
 
 const GRID_TICKS = [25, 50, 75, 100]; // light vertical lines (no line at 0%)
