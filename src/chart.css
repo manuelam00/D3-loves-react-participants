@@ -1,33 +1,107 @@
-/* Roboto Mono: the font of the course logo. @import must be the first rule in the file. */
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap");
+/* Fonts (must come first in the file):
+   - Archivo: the big title and italic subtitle. A grotesque in the Helvetica / Arial
+     family, like the example, but more refined at large sizes
+   - Inter: body text, labels and buttons
+   - Roboto Mono: the "D3 ♥ React" course logo */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,700;0,800;1,300;1,400&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400&display=swap");
 
-/* The Vite template's index.css fixes #root at 1126px wide.
-   This lets the page use the full window width instead. */
+/* ---- Theme colours ------------------------------------------------------
+   App.jsx sets data-theme="dark" or "light" on <html>.
+   Everything below uses these variables, so switching theme is one attribute.
+   (The chart SVGs use the same values from colors.js.) */
+
+html[data-theme="dark"] {
+  --bg: #1b1b1f;
+  --text: #f5f4f0;
+  --text-muted: #8b8f94;
+  --teal: #658a8e; /* eyebrow and italic subtitle, sampled from the example */
+  --line: #2e2f35;
+  --button-border: #3a3b42;
+  --accent: #ff6fa3;
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  --bg: #f5f4f0;
+  --text: #1b1b1f;
+  --text-muted: #6b6f73;
+  --teal: #4e6b67;
+  --line: #dcd9d1;
+  --button-border: #cfccc4;
+  --accent: #d6336c;
+  color-scheme: light;
+}
+
+/* Override the Vite template's index.css: full-width page, our colours and fonts */
+html[data-theme] {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  transition: background 0.3s, color 0.3s;
+}
+
 #root {
   width: 100%;
   border-inline: none;
-}
-
-.chart-container {
-  width: 100%;
-  box-sizing: border-box;
-  max-width: 1400px; /* the chart grows up to this width; change it to taste */
-  margin: 40px auto;
-  padding: 32px;
-  border-radius: 12px;
-  background: #16181d; /* explicit, so the chart looks the same in light or dark mode */
   text-align: left;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: #d4d7dd;
 }
 
-.chart-title {
-  font-size: clamp(32px, 4.5vw, 52px); /* big, but shrinks on small screens */
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin: 0 0 12px 0;
-  color: #ffffff;
+/* ---- Page layout ---- */
+
+.page {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 64px) 96px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* ---- Hero header ---- */
+
+.eyebrow {
+  margin: 0 0 28px 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.hero-title {
+  margin: 0;
+  font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(40px, 7vw, 100px);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.hero-line {
+  display: block; /* one line each: the title is always split in two rows */
+}
+
+.hero-subtitle {
+  margin: 28px 0 0 0;
+  max-width: 16em;
+  font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(24px, 3.4vw, 44px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--teal);
+}
+
+.hero-intro {
+  margin: 24px 0 0 0;
+  max-width: 34em;
+  font-size: clamp(16px, 1.4vw, 19px);
+  line-height: 1.6;
+  color: var(--text);
+  opacity: 0.85;
 }
 
 /* ---- Course logo inside the title: "D3 ♥ React" ---- */
@@ -35,15 +109,15 @@
 .course-logo {
   display: inline-flex; /* keeps the 3 pieces together on one line */
   align-items: center;
-  gap: 0.4em;
+  gap: 0.3em;
   font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
   white-space: nowrap;
-  padding-bottom: 0.18em;
+  padding-bottom: 0.14em;
   /* Wavy red underline: a tiny wave drawn in SVG, repeated along the bottom */
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8' viewBox='0 0 20 8'%3E%3Cpath d='M0 4 Q5 0 10 4 T20 4' fill='none' stroke='%23e8325a' stroke-width='2.5'/%3E%3C/svg%3E")
-    repeat-x left bottom / 0.4em 0.16em;
+    repeat-x left bottom / 0.3em 0.12em;
 }
 
 .course-logo-heart {
@@ -53,29 +127,79 @@
   width: auto;
 }
 
-.chart-subtitle {
-  font-size: clamp(17px, 1.8vw, 22px);
-  color: #8a8f99;
-  margin: 0 0 20px 0;
+/* ---- Light / dark switch (top-right corner) ---- */
+
+.theme-toggle {
+  position: absolute;
+  top: 24px;
+  right: clamp(20px, 5vw, 64px);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--button-border);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.theme-icon {
+  position: relative; /* above the knob */
+  width: 18px;
+  height: 18px;
+  padding: 6px;
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s;
+}
+
+/* The knob slides under the sun (light) or the moon (dark) */
+.theme-knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform 0.3s ease;
+}
+
+.theme-knob.is-dark {
+  transform: translateX(34px);
+}
+
+/* The icon on top of the knob takes the background colour, so it stands out */
+html[data-theme="light"] .theme-icon:nth-of-type(1),
+html[data-theme="dark"] .theme-icon:nth-of-type(2) {
+  stroke: var(--bg);
 }
 
 /* ---- Sections ---- */
 
 .chart-section {
-  margin-top: 40px;
+  margin-top: clamp(56px, 7vw, 96px);
 }
 
 .section-title {
   font-family: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.16em;
   line-height: 1.4;
   text-transform: uppercase;
-  color: #8a8f99;
-  margin: 0 0 18px 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #2a2e37;
+  color: var(--teal);
+  margin: 0 0 22px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
 /* ---- Continent filter buttons ---- */
@@ -92,10 +216,10 @@
   align-items: center;
   gap: 8px;
   padding: 8px 18px;
-  border: 1px solid #343944;
+  border: 1px solid var(--button-border);
   border-radius: 999px; /* pill shape */
   background: transparent;
-  color: #b5b9c2;
+  color: var(--text-muted);
   font: inherit;
   font-size: 15px;
   cursor: pointer;
@@ -103,19 +227,19 @@
 }
 
 .filter-button:hover {
-  border-color: #ff6fa3;
-  color: #ffffff;
+  border-color: var(--accent);
+  color: var(--text);
 }
 
 .filter-button:focus-visible {
-  outline: 2px solid #ff6fa3;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 .filter-button.active {
-  background: #ff6fa3;
-  border-color: #ff6fa3;
-  color: #16181d;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
   font-weight: 600;
 }
 
@@ -123,9 +247,9 @@
   font-size: 13px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
 }
 
 .filter-button.active .filter-count {
-  background: rgba(22, 24, 29, 0.2);
+  background: color-mix(in srgb, var(--bg) 22%, transparent);
 }

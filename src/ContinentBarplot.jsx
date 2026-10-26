@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import * as d3 from "d3";
-import { COLORS } from "./colors";
 
 // ---- Layout (internal drawing size; the SVG scales to the container width) ----
 const WIDTH = 1000;
@@ -22,7 +21,13 @@ const LABELLED_TICKS = [0, 100]; // only these get a label
 const formatPercent = d3.format(".1f"); // 50.4
 
 // data: [{ continent, students }], including continents with 0 students
-export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
+export const ContinentBarplot = ({
+  data,
+  total,
+  selected,
+  onSelect,
+  colors: COLORS, // the current theme's palette, from colors.js via App
+}) => {
   // Add each continent's share of all students, in percent (0 – 100)
   const sortedData = useMemo(
     () =>

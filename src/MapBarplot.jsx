@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
-import { COLORS } from "./colors";
 
 // ---- Layout (all in pixels) ---------------------------------------------
 const WIDTH = 1000;
@@ -52,7 +51,13 @@ const boxToGeo = ([w, s, e, n]) => {
 
 const ZOOM_DURATION = 800; // ms
 
-export const MapBarplot = ({ data, geoData, maxValue, continent = "All" }) => {
+export const MapBarplot = ({
+  data,
+  geoData,
+  maxValue,
+  continent = "All",
+  colors: COLORS, // the current theme's palette, from colors.js via App
+}) => {
   // Which country is under the mouse? null = none.
   const [hovered, setHovered] = useState(null);
 
