@@ -7,9 +7,9 @@ const WIDTH = 1000;
 const HEIGHT = 500;
 const MARGIN = { top: 20, right: 40, bottom: 20, left: 10 };
 
-const MAP_WIDTH = 540; // the map lives in x = MARGIN.left ... MAP_WIDTH
-const LINK_END_X = 640; // where the lines arrive, just left of the labels
-const LABEL_WIDTH = 110; // room for "United Kingdom"
+const MAP_WIDTH = 530; // the map lives in x = MARGIN.left ... MAP_WIDTH
+const LINK_END_X = 610; // where the lines arrive, just left of the labels
+const LABEL_WIDTH = 150; // room for "United Kingdom" at 15px
 const BAR_START_X = LINK_END_X + LABEL_WIDTH; // bars start here
 const ROW_STEP = 23; // fixed height per country row, so filtering doesn't create giant bars
 const BAR_THICKNESS = 12; // bars are thinner than their row, for the rounded "pill" look
@@ -245,11 +245,13 @@ export const MapBarplot = ({ data, geoData, maxValue, continent = "All" }) => {
           height={yScale.step()}
           fill="transparent"
         />
+        {/* Right-aligned: textAnchor="end" makes the name END at x, just before the bar */}
         <text
-          x={LINK_END_X + 6}
+          x={BAR_START_X - 10}
           y={y + h / 2}
+          textAnchor="end"
           dominantBaseline="middle"
-          fontSize={12}
+          fontSize={15}
           fill={COLORS.label}
           fontWeight={isHovered(d.country) ? 700 : 400}
         >
@@ -266,10 +268,10 @@ export const MapBarplot = ({ data, geoData, maxValue, continent = "All" }) => {
           fill={COLORS.bar}
         />
         <text
-          x={BAR_START_X + w + 5}
+          x={BAR_START_X + w + 6}
           y={y + h / 2}
           dominantBaseline="middle"
-          fontSize={11}
+          fontSize={14}
           fill={isHovered(d.country) ? COLORS.label : COLORS.value}
         >
           {d.students}
@@ -305,10 +307,10 @@ export const MapBarplot = ({ data, geoData, maxValue, continent = "All" }) => {
         </circle>
         <circle cx={cx} cy={cy} r={3} fill={COLORS.accent} />
 
-        <text x={msgX} y={msgY - 14} textAnchor="middle" fontSize={19} fill={COLORS.label}>
+        <text x={msgX} y={msgY - 16} textAnchor="middle" fontSize={22} fill={COLORS.label}>
           Waiting for future students
         </text>
-        <text x={msgX} y={msgY + 14} textAnchor="middle" fontSize={19} fill={COLORS.label}>
+        <text x={msgX} y={msgY + 16} textAnchor="middle" fontSize={22} fill={COLORS.label}>
           from the{" "}
           <tspan fontStyle="italic" fontWeight={700} fill={COLORS.accent}>
             {CONTINENT_ADJECTIVES[continent] ?? continent}

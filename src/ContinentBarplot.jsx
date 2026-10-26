@@ -4,16 +4,16 @@ import { COLORS } from "./colors";
 
 // ---- Layout (internal drawing size; the SVG scales to the container width) ----
 const WIDTH = 1000;
-const ROW_STEP = 36; // height of one continent row
+const ROW_STEP = 40; // height of one continent row
 const BAR_THICKNESS = 16;
 const PADDING_TOP = 6;
-const AXIS_HEIGHT = 28; // room under the rows for the "0%" and "100%" labels
+const AXIS_HEIGHT = 32; // room under the rows for the "0%" and "100%" labels
 
 // Columns, from left to right:
 //   [ continent, right-aligned ] [ % in bold, right-aligned ] [ bar ......... ] [ count ]
-const CONTINENT_RIGHT_X = 140; // continent names END here
-const PERCENT_RIGHT_X = 215; // percentages END here
-const BAR_START_X = 230; // bars (and the 0% line) start here
+const CONTINENT_RIGHT_X = 165; // continent names END here
+const PERCENT_RIGHT_X = 255; // percentages END here
+const BAR_START_X = 272; // bars (and the 0% line) start here
 const BAR_END_X = WIDTH - 50; // the 100% line
 
 const GRID_TICKS = [25, 50, 75, 100]; // light vertical lines (no line at 0%)
@@ -65,9 +65,9 @@ export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
     <text
       key={tick}
       x={xScale(tick)}
-      y={PADDING_TOP + rowsHeight + 18}
+      y={PADDING_TOP + rowsHeight + 22}
       textAnchor="middle"
-      fontSize={11}
+      fontSize={14}
       fill={COLORS.value}
     >
       {tick}%
@@ -121,7 +121,7 @@ export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
           y={yMid}
           textAnchor="end"
           dominantBaseline="middle"
-          fontSize={12}
+          fontSize={16}
           fill={isSelected ? COLORS.label : COLORS.value}
           fontWeight={isSelected ? 700 : 400}
         >
@@ -134,7 +134,7 @@ export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
           y={yMid}
           textAnchor="end"
           dominantBaseline="middle"
-          fontSize={15}
+          fontSize={20}
           fontWeight={700}
           fill={isSelected ? COLORS.accent : COLORS.label}
         >
@@ -158,7 +158,7 @@ export const ContinentBarplot = ({ data, total, selected, onSelect }) => {
           x={barEnd + 8}
           y={yMid}
           dominantBaseline="middle"
-          fontSize={12}
+          fontSize={15}
           fill={COLORS.value}
         >
           {d.students}

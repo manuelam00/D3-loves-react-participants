@@ -19,15 +19,16 @@
 }
 
 .chart-title {
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.2;
-  margin: 0 0 6px 0;
+  font-size: clamp(32px, 4.5vw, 52px); /* big, but shrinks on small screens */
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px 0;
   color: #ffffff;
 }
 
 .chart-subtitle {
-  font-size: 15px;
+  font-size: clamp(17px, 1.8vw, 22px);
   color: #8a8f99;
   margin: 0 0 20px 0;
 }
@@ -40,7 +41,7 @@
 
 .section-title {
   font-family: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.1em;
   line-height: 1.4;
@@ -64,13 +65,13 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
+  padding: 8px 18px;
   border: 1px solid #343944;
   border-radius: 999px; /* pill shape */
   background: transparent;
   color: #b5b9c2;
   font: inherit;
-  font-size: 13px;
+  font-size: 15px;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -93,8 +94,8 @@
 }
 
 .filter-count {
-  font-size: 11px;
-  padding: 1px 7px;
+  font-size: 13px;
+  padding: 2px 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
 }
