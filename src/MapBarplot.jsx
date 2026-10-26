@@ -11,6 +11,7 @@ const LINK_END_X = 640; // where the lines arrive, just left of the labels
 const LABEL_WIDTH = 110; // room for "United Kingdom"
 const BAR_START_X = LINK_END_X + LABEL_WIDTH; // bars start here
 const ROW_STEP = 23; // fixed height per country row, so filtering doesn't create giant bars
+const BAR_THICKNESS = 7; // bars are thinner than their row, for the rounded "pill" look
 
 // ---- Colours for a dark background -------------------------------------------
 // One accent colour (pink) ties each country's circle to its line.
@@ -193,7 +194,16 @@ export const MapBarplot = ({ data, geoData, maxValue }) => {
         >
           {d.country}
         </text>
-        <rect x={BAR_START_X} y={y} width={w} height={h} fill={COLORS.bar} rx={2} />
+        {/* Thin, pill-shaped bar, vertically centred in its row.
+            rx = half the thickness -> fully rounded ends */}
+        <rect
+          x={BAR_START_X}
+          y={y + (h - BAR_THICKNESS) / 2}
+          width={w}
+          height={BAR_THICKNESS}
+          rx={BAR_THICKNESS / 2}
+          fill={COLORS.bar}
+        />
         <text
           x={BAR_START_X + w + 5}
           y={y + h / 2}
