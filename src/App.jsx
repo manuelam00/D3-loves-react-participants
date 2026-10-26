@@ -117,21 +117,38 @@ export default function App() {
           <span className="hero-line">students come from?</span>
         </h1>
 
-        <p className="hero-subtitle">
-          A snapshot of students from all over the world.
-        </p>
+        {/* Two columns under the title: text on the left, key numbers on the right */}
+        <div className="hero-bottom">
+          <div>
+            <p className="hero-subtitle">
+              A snapshot of students from all over the world.
+            </p>
 
-        <p className="hero-intro">
-          {TOTAL_STUDENTS} students from {data.length} countries. Explore where
-          they come from: first by continent, then country by country.
-        </p>
+            <p className="data-note">
+              <span className="data-note-label">A note on the data</span>
+              Countries show where participants are based, not where they are
+              originally from. A map of countries of origin could tell a very
+              different story.
+            </p>
+          </div>
 
-        <p className="data-note">
-          <span className="data-note-label">A note on the data</span>
-          Countries show where participants are based, not where they are
-          originally from. A map of countries of origin could tell a very
-          different story.
-        </p>
+          {/* BANs ("big numbers"): computed from the data, so they update with it */}
+          <div className="hero-stats" aria-label="Key numbers">
+            <p className="hero-stats-label">
+              <span className="pulse-dot" aria-hidden="true" />
+              Cohort 1
+            </p>
+            {/* A 2 x 2 grid: numbers on the first row, words underneath
+                232        20
+                students   countries */}
+            <div className="ban-grid">
+              <span className="ban-number">{TOTAL_STUDENTS}</span>
+              <span className="ban-number">{data.length}</span>
+              <span className="ban-label">students</span>
+              <span className="ban-label">countries</span>
+            </div>
+          </div>
+        </div>
       </header>
 
       <section className="chart-section">
@@ -213,6 +230,25 @@ export default function App() {
           )}
         </div>
       </aside>
+
+      {/* Call to action: one simple sentence */}
+      <footer className="cta">
+        <p>
+          Want to be on the map?{" "}
+          <a
+            href="https://www.react-graph-gallery.com/react-d3-dataviz-course"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Join the waitlist for the course
+          </a>
+          , taught by{" "}
+          <a href="https://www.yan-holtz.com/" target="_blank" rel="noopener noreferrer">
+            Yan Holtz
+          </a>
+          .
+        </p>
+      </footer>
     </main>
   );
 }
