@@ -114,10 +114,27 @@ html[data-theme] {
   font-weight: 400;
   letter-spacing: -0.02em;
   white-space: nowrap;
-  padding-bottom: 0.14em;
-  /* Wavy red underline: a tiny wave drawn in SVG, repeated along the bottom */
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8' viewBox='0 0 20 8'%3E%3Cpath d='M0 4 Q5 0 10 4 T20 4' fill='none' stroke='%23e8325a' stroke-width='2.5'/%3E%3C/svg%3E")
-    repeat-x left bottom / 0.3em 0.12em;
+  position: relative; /* anchors the underline below */
+}
+
+/* The logo's hand-drawn underline: two thin red strokes that start apart
+   on the left, cross, and run together to the right.
+   Traced from the course logo and drawn as a small SVG, stretched under the text. */
+.course-logo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: -0.2em; /* runs slightly past "React", like the original */
+  bottom: -0.2em;
+  height: 0.22em;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 466 20' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23ff1a1a' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M1 1.5C60 6 110 11 200 11S380 7 465 4'/%3E%3Cpath d='M25 18C60 15 90 10 150 8S330 3.5 465 2'/%3E%3C/g%3E%3C/svg%3E")
+    no-repeat center / 100% 100%;
+}
+
+/* A little room under the first title row, so the underline doesn't touch row two */
+.hero-line:first-child {
+  margin-bottom: 0.14em;
 }
 
 .course-logo-heart {
@@ -252,4 +269,99 @@ html[data-theme="dark"] .theme-icon:nth-of-type(2) {
 
 .filter-button.active .filter-count {
   background: color-mix(in srgb, var(--bg) 22%, transparent);
+}
+
+/* ---- "Coming next" box under the dashboard ---- */
+
+.coming-next {
+  margin-top: clamp(64px, 8vw, 112px);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: clamp(24px, 4vw, 64px);
+  align-items: center;
+  padding: clamp(28px, 4vw, 48px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+
+.coming-next-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+/* A softly pulsing dot: "live", more data on the way */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  animation: pulse 2.2s ease-out infinite;
+}
+
+@keyframes pulse {
+  to {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+.coming-next-title {
+  margin: 0;
+  max-width: 18em;
+  font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 3.2vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.coming-next-body {
+  margin: 16px 0 0 0;
+  max-width: 36em;
+  font-size: clamp(16px, 1.3vw, 18px);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* Decorative mosaic, echoing the teal tiles: filled tiles = cohort 2,
+   dashed empty tiles = students still to come */
+.coming-next-mosaic {
+  display: grid;
+  grid-template-columns: repeat(6, 26px);
+  gap: 6px;
+}
+
+.mosaic-tile {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+}
+
+.mosaic-tile.is-empty {
+  border: 1px dashed var(--button-border);
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot {
+    animation: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .coming-next {
+    grid-template-columns: 1fr;
+  }
+  .coming-next-mosaic {
+    display: none;
+  }
 }

@@ -30,6 +30,16 @@ const continentTotals = CONTINENTS.map((c) => ({
     .reduce((sum, d) => sum + d.students, 0),
 }));
 
+// Decorative mosaic in the "Coming next" box: teal tones from the mosaic palette.
+// Numbers pick a tone, null = an empty dashed tile (students still to come).
+const MOSAIC_TONES = ["#2f3f3e", "#3c544e", "#4e6b67", "#587676", "#729494", "#7fa6a6", "#8db7b7"];
+const MOSAIC = [
+  3, 5, 1, 6, 2, 4,
+  0, 4, 6, 3, 5, null,
+  5, 2, 3, null, 1, null,
+  1, 6, null, null, null, null,
+];
+
 const buttons = [
   { continent: "All", students: TOTAL_STUDENTS },
   ...continentTotals,
@@ -151,6 +161,39 @@ export default function App() {
           colors={colors}
         />
       </section>
+
+      <aside className="coming-next" aria-label="Coming next">
+        <div>
+          <p className="coming-next-eyebrow">
+            <span className="pulse-dot" aria-hidden="true" />
+            Coming next
+          </p>
+          <h2 className="coming-next-title">
+            This is cohort 2. How will the map change as the next cohort
+            joins?
+          </h2>
+          <p className="coming-next-body">
+            These numbers capture the students of cohort 2, my own cohort. When
+            the next students arrive, their data will land here too, and we'll
+            see how the mix shifts: new countries, growing communities, and
+            maybe the first students from Africa.
+          </p>
+        </div>
+
+        <div className="coming-next-mosaic" aria-hidden="true">
+          {MOSAIC.map((tone, i) =>
+            tone === null ? (
+              <span key={i} className="mosaic-tile is-empty" />
+            ) : (
+              <span
+                key={i}
+                className="mosaic-tile"
+                style={{ background: MOSAIC_TONES[tone] }}
+              />
+            )
+          )}
+        </div>
+      </aside>
     </main>
   );
 }
